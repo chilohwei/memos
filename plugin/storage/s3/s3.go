@@ -20,14 +20,8 @@ type Client struct {
 	Bucket *string
 }
 
-func NewClient(ctx context.Context, s3Config *storepb.WorkspaceStorageSetting_S3Config) (*Client, error) {
-	resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...any) (aws.Endpoint, error) {
-		return aws.Endpoint{
-			URL: s3Config.Endpoint,
-		}, nil
-	})
+func NewClient(ctx context.Context, s3Config *storepb.StorageS3Config) (*Client, error) {
 	cfg, err := config.LoadDefaultConfig(ctx,
-		config.WithEndpointResolverWithOptions(resolver),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(s3Config.AccessKeyId, s3Config.AccessKeySecret, "")),
 		config.WithRegion(s3Config.Region),
 	)
@@ -35,7 +29,9 @@ func NewClient(ctx context.Context, s3Config *storepb.WorkspaceStorageSetting_S3
 		return nil, errors.Wrap(err, "failed to load s3 config")
 	}
 
-	client := s3.NewFromConfig(cfg)
+	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String(s3Config.Endpoint)
+	})
 	return &Client{
 		Client: client,
 		Bucket: aws.String(s3Config.Bucket),
@@ -70,7 +66,9 @@ func (c *Client) PresignGetObject(ctx context.Context, key string) (string, erro
 		Bucket: aws.String(*c.Bucket),
 		Key:    aws.String(key),
 	}, func(opts *s3.PresignOptions) {
-		opts.Expires = time.Duration(7 * 24 * time.Hour)
+		// Set the expiration time of the presigned URL to 5 days.
+		// Reference: https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html
+		opts.Expires = time.Duration(5 * 24 * time.Hour)
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "failed to presign put object")

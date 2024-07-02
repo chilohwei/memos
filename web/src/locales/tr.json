@@ -95,8 +95,10 @@
   },
   "memo": {
     "archived-at": "Arşivlendi",
+    "code": "Kod",
     "comment": {
-      "self": "Yorumlar"
+      "self": "Yorumlar",
+      "write-a-comment": "Bir yorum yazın"
     },
     "copy-link": "Bağlantıyı kopyala",
     "count-memos-in-date": "{{count}}notlar{{date}}",
@@ -105,17 +107,18 @@
     "embed": "Yerleştir",
     "fetch-more": "Daha fazlasını almak için tıklayın",
     "fetching-data": "Veri getiriliyor…",
+    "links": "Bağlantılar",
     "no-archived-memos": "Arşivlenmiş not yok.",
     "search-placeholder": "Notları ara",
     "show-more": "Daha fazlasını göster",
+    "to-do": "Yapılacaklar",
     "view-detail": "Detayları görüntüle",
     "visibility": {
       "disabled": "Halka açık notlar devre dışı bırakıldı",
       "private": "Sadece sizin için görünür",
       "protected": "Çalışma Alanı",
       "public": "Herkese açık"
-    },
-    "wrapping": "Paketleme"
+    }
   },
   "message": {
     "archived-successfully": "Başarıyla arşivlendi",
@@ -137,7 +140,8 @@
   "reference": {
     "add-references": "Referans ekle",
     "embedded-usage": "Gömülü İçerik Olarak Kullan",
-    "no-memos-found": "Hiçbir not bulunamadı"
+    "no-memos-found": "Hiçbir not bulunamadı",
+    "search-placeholder": "İçerik arayın"
   },
   "resource": {
     "clear": "Temizle",
@@ -203,6 +207,7 @@
       "delete-member": "Üye Sil",
       "delete-warning": "{{kullanıcıadı}} öğesini silmek istediğinizden emin misiniz? BU EYLEM GERI DÖNDÜRÜLEMEZ"
     },
+    "memo-related": "Not",
     "my-account": "Hesabım",
     "preference": "Tercihler",
     "preference-section": {
@@ -286,6 +291,8 @@
       "disable-password-login-warning": "Bu, tüm kullanıcılar için parola girişini devre dışı bırakacaktır. Yapılandırılmış kimlik sağlayıcılarınız başarısız olursa, veritabanındaki bu ayarı geri almadan oturum açmak mümkün değildir. Ayrıca bir kimlik sağlayıcısını kaldırırken ekstra dikkatli olmanız gerekecektir",
       "disable-public-memos": "Halka açık notları devre dışı bırak",
       "display-with-updated-time": "Güncellenmiş zaman göstergesi",
+      "enable-auto-compact": "Otomatik sıkıştırmayı etkinleştir",
+      "enable-double-click-to-edit": "Düzenlemek için çift tıklamayı etkinleştir",
       "enable-password-login": "Parola girişini etkinleştir",
       "enable-password-login-warning": "Bu, tüm kullanıcılar için parola girişini etkinleştirecektir. Yalnızca kullanıcıların hem SSO hem de parola kullanarak oturum açabilmesini istiyorsanız devam edin",
       "max-upload-size": "Maksimum yükleme boyutu (MiB)",
@@ -297,7 +304,7 @@
     "all-tags": "Tüm Etiketler",
     "create-tag": "Etiket Oluştur",
     "create-tags-guide": "'#tag' girerek etiket oluşturabilirsiniz.",
-    "delete-confirm": "Bu etiketi sileceğinizden emin misiniz?",
+    "delete-confirm": "Bu etiketi silmek istediğinizden emin misiniz? İlgili tüm notlar arşivlenecektir.",
     "delete-tag": "Etiketi Sil",
     "no-tag-found": "Etiket bulunamadı"
   },

@@ -37,7 +37,7 @@
     "learn-more": "En savoir plus",
     "link": "Lien",
     "mark": "Lier",
-    "memos": "Mémos",
+    "memos": "Memos",
     "name": "Nom",
     "new": "Nouveau",
     "nickname": "Surnom",
@@ -95,19 +95,23 @@
   },
   "memo": {
     "archived-at": "Archivé le",
+    "code": "Code",
     "comment": {
-      "self": "Commentaires"
+      "self": "Commentaires",
+      "write-a-comment": "Écrire un commentaire"
     },
     "copy-link": "Copier le lien",
-    "count-memos-in-date": "{{count}} mémos le {{date}}",
+    "count-memos-in-date": "{{count}} memos le {{date}}",
     "delete-confirm": "Êtes-vous sûr de vouloir supprimer ce memos ? CETTE ACTION EST IRRÉVERSIBLE",
     "delete-memo": "Supprimer Memo",
     "embed": "Intégrer",
     "fetch-more": "Cliquez pour en savoir plus",
     "fetching-data": "Récupération des données…",
+    "links": "Liens",
     "no-archived-memos": "Pas de memos archivés.",
     "search-placeholder": "Recherche de memos",
     "show-more": "Afficher plus",
+    "to-do": "À faire",
     "view-detail": "Voir le détail",
     "visibility": {
       "disabled": "Les memos publics sont désactivés",
@@ -136,7 +140,8 @@
   "reference": {
     "add-references": "Ajouter des références",
     "embedded-usage": "Utiliser comme contenu intégré",
-    "no-memos-found": "Aucun mémo trouvé"
+    "no-memos-found": "Aucun memos trouvé",
+    "search-placeholder": "Rechercher du contenu"
   },
   "resource": {
     "clear": "Nettoyer",
@@ -202,6 +207,7 @@
       "delete-member": "Supprimer un membre",
       "delete-warning": "Êtes-vous sûr de vouloir supprimer {{username}} ? CETTE ACTION EST IRRÉVERSIBLE"
     },
+    "memo-related": "Memo",
     "my-account": "Mon compte",
     "preference": "Préférences",
     "preference-section": {
@@ -285,6 +291,8 @@
       "disable-password-login-warning": "Cela désactivera la connexion par mot de passe pour tous les utilisateurs. Il n'est pas possible de se connecter sans revenir sur ce paramètre dans la base de données si les fournisseurs d'identité configurés échouent. Vous devrez également être très prudent lorsque vous supprimez un fournisseur d'identité",
       "disable-public-memos": "Désactiver les memos publics",
       "display-with-updated-time": "Mettre à jour l'heure des memos lorsqu'ils sont modifiés",
+      "enable-auto-compact": "Activer l'auto compact",
+      "enable-double-click-to-edit": "Activer le double-clic pour modifier",
       "enable-password-login": "Activer la connexion par mot de passe",
       "enable-password-login-warning": "Ceci activera la connexion par mot de passe pour tous les utilisateurs. Ne continuez que si vous souhaitez que les utilisateurs puissent se connecter à la fois par SSO et par mot de passe",
       "max-upload-size": "Taille maximale du téléversement (MiB)",
@@ -296,7 +304,7 @@
     "all-tags": "Toutes les Étiquettes",
     "create-tag": "Créer une Étiquette",
     "create-tags-guide": "Vous pouvez ajouter des tags en écrivant `#tag`.",
-    "delete-confirm": "Voulez-vous vraiment supprimer ce tag ?",
+    "delete-confirm": "Voulez-vous vraiment supprimer ce tag ? Tous les memos y afférents seront archivés.",
     "delete-tag": "Supprimer le tag",
     "no-tag-found": "Aucun tag trouvé"
   },

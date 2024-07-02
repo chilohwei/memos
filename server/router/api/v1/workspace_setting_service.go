@@ -12,38 +12,49 @@ import (
 	"github.com/usememos/memos/store"
 )
 
-func (s *APIV1Service) ListWorkspaceSettings(ctx context.Context, _ *v1pb.ListWorkspaceSettingsRequest) (*v1pb.ListWorkspaceSettingsResponse, error) {
-	workspaceSettings, err := s.Store.ListWorkspaceSettings(ctx, &store.FindWorkspaceSetting{})
+func (s *APIV1Service) GetWorkspaceSetting(ctx context.Context, request *v1pb.GetWorkspaceSettingRequest) (*v1pb.WorkspaceSetting, error) {
+	workspaceSettingKeyString, err := ExtractWorkspaceSettingKeyFromName(request.Name)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid workspace setting name: %v", err)
+	}
+
+	workspaceSettingKey := storepb.WorkspaceSettingKey(storepb.WorkspaceSettingKey_value[workspaceSettingKeyString])
+	// Get workspace setting from store with default value.
+	switch workspaceSettingKey {
+	case storepb.WorkspaceSettingKey_BASIC:
+		_, err = s.Store.GetWorkspaceBasicSetting(ctx)
+	case storepb.WorkspaceSettingKey_GENERAL:
+		_, err = s.Store.GetWorkspaceGeneralSetting(ctx)
+	case storepb.WorkspaceSettingKey_MEMO_RELATED:
+		_, err = s.Store.GetWorkspaceMemoRelatedSetting(ctx)
+	case storepb.WorkspaceSettingKey_STORAGE:
+		_, err = s.Store.GetWorkspaceStorageSetting(ctx)
+	default:
+		return nil, status.Errorf(codes.InvalidArgument, "unsupported workspace setting key: %v", workspaceSettingKey)
+	}
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get workspace setting: %v", err)
 	}
 
-	response := &v1pb.ListWorkspaceSettingsResponse{
-		Settings: []*v1pb.WorkspaceSetting{},
-	}
-	for _, workspaceSetting := range workspaceSettings {
-		if workspaceSetting.Key == storepb.WorkspaceSettingKey_WORKSPACE_SETTING_BASIC {
-			continue
-		}
-		response.Settings = append(response.Settings, convertWorkspaceSettingFromStore(workspaceSetting))
-	}
-	return response, nil
-}
-
-func (s *APIV1Service) GetWorkspaceSetting(ctx context.Context, request *v1pb.GetWorkspaceSettingRequest) (*v1pb.WorkspaceSetting, error) {
-	settingKeyString, err := ExtractWorkspaceSettingKeyFromName(request.Name)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid workspace setting name: %v", err)
-	}
-	settingKey := storepb.WorkspaceSettingKey(storepb.WorkspaceSettingKey_value[settingKeyString])
 	workspaceSetting, err := s.Store.GetWorkspaceSetting(ctx, &store.FindWorkspaceSetting{
-		Name: settingKey.String(),
+		Name: workspaceSettingKey.String(),
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get workspace setting: %v", err)
 	}
 	if workspaceSetting == nil {
 		return nil, status.Errorf(codes.NotFound, "workspace setting not found")
+	}
+
+	// For storage setting, only host can get it.
+	if workspaceSetting.Key == storepb.WorkspaceSettingKey_STORAGE {
+		user, err := s.GetCurrentUser(ctx)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to get current user: %v", err)
+		}
+		if user == nil || user.Role != store.RoleHost {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
 	}
 
 	return convertWorkspaceSettingFromStore(workspaceSetting), nil
@@ -54,7 +65,7 @@ func (s *APIV1Service) SetWorkspaceSetting(ctx context.Context, request *v1pb.Se
 		return nil, status.Errorf(codes.InvalidArgument, "setting workspace setting is not allowed in demo mode")
 	}
 
-	user, err := getCurrentUser(ctx, s.Store)
+	user, err := s.GetCurrentUser(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get current user: %v", err)
 	}
@@ -100,15 +111,15 @@ func convertWorkspaceSettingToStore(setting *v1pb.WorkspaceSetting) *storepb.Wor
 		},
 	}
 	switch workspaceSetting.Key {
-	case storepb.WorkspaceSettingKey_WORKSPACE_SETTING_GENERAL:
+	case storepb.WorkspaceSettingKey_GENERAL:
 		workspaceSetting.Value = &storepb.WorkspaceSetting_GeneralSetting{
 			GeneralSetting: convertWorkspaceGeneralSettingToStore(setting.GetGeneralSetting()),
 		}
-	case storepb.WorkspaceSettingKey_WORKSPACE_SETTING_STORAGE:
+	case storepb.WorkspaceSettingKey_STORAGE:
 		workspaceSetting.Value = &storepb.WorkspaceSetting_StorageSetting{
 			StorageSetting: convertWorkspaceStorageSettingToStore(setting.GetStorageSetting()),
 		}
-	case storepb.WorkspaceSettingKey_WORKSPACE_SETTING_MEMO_RELATED:
+	case storepb.WorkspaceSettingKey_MEMO_RELATED:
 		workspaceSetting.Value = &storepb.WorkspaceSetting_MemoRelatedSetting{
 			MemoRelatedSetting: convertWorkspaceMemoRelatedSettingToStore(setting.GetMemoRelatedSetting()),
 		}
@@ -121,11 +132,8 @@ func convertWorkspaceGeneralSettingFromStore(setting *storepb.WorkspaceGeneralSe
 		return nil
 	}
 	generalSetting := &v1pb.WorkspaceGeneralSetting{
-		InstanceUrl:           setting.InstanceUrl,
-		DisallowSignup:        setting.DisallowSignup,
-		DisallowPasswordLogin: setting.DisallowPasswordLogin,
-		AdditionalScript:      setting.AdditionalScript,
-		AdditionalStyle:       setting.AdditionalStyle,
+		AdditionalScript: setting.AdditionalScript,
+		AdditionalStyle:  setting.AdditionalStyle,
 	}
 	if setting.CustomProfile != nil {
 		generalSetting.CustomProfile = &v1pb.WorkspaceCustomProfile{
@@ -144,11 +152,8 @@ func convertWorkspaceGeneralSettingToStore(setting *v1pb.WorkspaceGeneralSetting
 		return nil
 	}
 	generalSetting := &storepb.WorkspaceGeneralSetting{
-		InstanceUrl:           setting.InstanceUrl,
-		DisallowSignup:        setting.DisallowSignup,
-		DisallowPasswordLogin: setting.DisallowPasswordLogin,
-		AdditionalScript:      setting.AdditionalScript,
-		AdditionalStyle:       setting.AdditionalStyle,
+		AdditionalScript: setting.AdditionalScript,
+		AdditionalStyle:  setting.AdditionalStyle,
 	}
 	if setting.CustomProfile != nil {
 		generalSetting.CustomProfile = &storepb.WorkspaceCustomProfile{
@@ -193,7 +198,7 @@ func convertWorkspaceStorageSettingToStore(setting *v1pb.WorkspaceStorageSetting
 		UploadSizeLimitMb: setting.UploadSizeLimitMb,
 	}
 	if setting.S3Config != nil {
-		settingpb.S3Config = &storepb.WorkspaceStorageSetting_S3Config{
+		settingpb.S3Config = &storepb.StorageS3Config{
 			AccessKeyId:     setting.S3Config.AccessKeyId,
 			AccessKeySecret: setting.S3Config.AccessKeySecret,
 			Endpoint:        setting.S3Config.Endpoint,
@@ -212,6 +217,8 @@ func convertWorkspaceMemoRelatedSettingFromStore(setting *storepb.WorkspaceMemoR
 		DisallowPublicVisible: setting.DisallowPublicVisible,
 		DisplayWithUpdateTime: setting.DisplayWithUpdateTime,
 		ContentLengthLimit:    setting.ContentLengthLimit,
+		EnableAutoCompact:     setting.EnableAutoCompact,
+		EnableDoubleClickEdit: setting.EnableDoubleClickEdit,
 	}
 }
 
@@ -223,5 +230,7 @@ func convertWorkspaceMemoRelatedSettingToStore(setting *v1pb.WorkspaceMemoRelate
 		DisallowPublicVisible: setting.DisallowPublicVisible,
 		DisplayWithUpdateTime: setting.DisplayWithUpdateTime,
 		ContentLengthLimit:    setting.ContentLengthLimit,
+		EnableAutoCompact:     setting.EnableAutoCompact,
+		EnableDoubleClickEdit: setting.EnableDoubleClickEdit,
 	}
 }
